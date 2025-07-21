@@ -1,0 +1,136 @@
+1. Register New User with Email Verification
+📋 Task Description:
+Simulate user registration. If name or email is missing, show an error. Otherwise, send a verification email (with delay) and log success.
+
+🧩 Methods Used:
+new Promise(...)
+await inside try/catch
+
+🔍 Helpful Notes:
+sendVerificationEmail uses setTimeout to simulate email sending delay.
+registerUser checks for missing inputs before calling await sendVerificationEmail(...).
+
+
+*****************************************************************************************************
+
+2. Booking an Appointment
+📋 Task Description:
+Simulate booking a time slot. If the slot is already booked (based on a list), reject the request.
+
+🧩 Methods Used:
+Simulated delay with setTimeout
+includes() to check booked slot
+await usage
+
+🔍 Helpful Notes:
+If slot is "b3" or "a1", Promise is rejected.
+Good for practicing flow control after rejections.
+
+*****************************************************************************************************
+
+3. Check Server Status with Retry
+📋 Task Description:
+Simulate pinging a server. If it's offline, retry up to 5 times. Stop and log an error after the fifth failure.
+
+🧩 Methods Used:
+Math.random() for unpredictability
+for loop with await
+Promises inside pingServer()
+
+🔍 Helpful Notes:
+Uses try/catch inside the loop so failed attempts don’t crash the program.
+Can be extended to implement exponential backoff.
+
+*****************************************************************************************************
+
+4. Upload a File to Server
+📋 Task Description:
+Simulate uploading a file. If the file name is missing, reject. Otherwise, "upload" it with delay.
+
+🧩 Methods Used:
+Basic Promise and setTimeout
+await and try/catch
+
+🔍 Helpful Notes:
+Helps illustrate a common real-world use case (file upload logic + validation).
+You can easily modify this to include size checks or type restrictions.
+
+*****************************************************************************************************
+
+5. Fetch Product Info
+📋 Task Description:
+Return product name based on ID using a simulated database. If ID doesn’t exist, reject.
+
+🧩 Methods Used:
+.then().catch() instead of await
+
+🔍 Helpful Notes:
+Good example of using Promises without async/await
+Teaches object access, fallback handling, and error display
+simulated database { 1: "Laptop", 2: "Phone", 3: "Tablet" }
+
+*****************************************************************************************************
+
+6. Calculate Shipping Cost
+📋 Task Description:
+Given a weight, return the shipping cost. Reject if weight is zero or negative.
+
+🧩 Methods Used:
+.then().catch()
+
+🔍 Helpful Notes:
+Shows how business rules (cost = weight * 5) can be handled cleanly in Promises.
+
+*****************************************************************************************************
+
+7- Delete Account
+📋 Task Description:
+Simulate account deletion. Confirm before deleting. If confirmation is false, reject.
+
+🧩 Methods Used:
+.then().catch()
+setTimeout for delay
+
+🔍 Helpful Notes:
+Encourages thinking about guard clauses and user safety (don't delete unless confirmed).
+
+*****************************************************************************************************
+
+8- Check Password Strength
+📋 Task Description:
+Check if a password is strong (length >= 6). Resolve if valid, otherwise reject.
+
+🧩 Methods Used:
+Direct string checks
+Return based on condition
+
+🔍 Helpful Notes:
+Ideal beginner task to practice writing reusable validation functions with Promises.
+
+*****************************************************************************************************
+
+9- Get a User’s Profile
+📋 Task:
+Fetch a user’s name and email from an API (by ID). Show them in the console. If the user doesn’t exist, show an error.
+
+🧠 API:
+https://jsonplaceholder.typicode.com/users/1
+
+💡 Concepts:
+.then().catch()
+Fetching and parsing JSON
+Error handling
+
+*****************************************************************************************************
+
+10- List All Posts by a User
+📋 Task:
+Fetch all posts from user with ID = 1 and print each post’s title.
+
+🧠 API:
+https://jsonplaceholder.typicode.com/posts?userId=1
+
+💡 Concepts:
+Fetch with query parameters
+Array handling
+.then().catch()
