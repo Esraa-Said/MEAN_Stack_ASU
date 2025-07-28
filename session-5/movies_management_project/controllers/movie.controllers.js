@@ -16,29 +16,7 @@ const createMovie = async (req, res) => {
 
 const getAllMovies = async (req, res) => {
   try {
-    // const movies = await Movie.find({
-    //   duration: +req.query.duration,
-    //   ratings: +req.query.ratings,
-    // });
-
-    // return empty not work for not query string not in movie data
-    // const movies = await Movie.find(req.query);
-
-    // return empty if not specify the query string
-    // const movies = await Movie.find().where("duration").equals(req.query.duration);
-
-    // const sortField = req.query.sortBy || "name";
-    // const sortOrder = req.query.order === "desc" ? -1 : 1;
-    // const movies = await Movie.find().sort({ [sortField]: sortOrder });
-
-    // pagination
-    // const page = +req.query.page || 1;
-    // const limit = +req.query.limit || 5;
-    // const skip = (page - 1) * limit;
-    // const movies = await Movie.find().skip(skip).limit(limit);
-
     const movies = await Movie.find();
-
     res
       .status(200)
       .json({ status: 200, length: movies.length, data: { movies: movies } });
