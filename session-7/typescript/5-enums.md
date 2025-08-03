@@ -1,4 +1,3 @@
-
 # 🎌 TypeScript Enums - Explained with Useful Examples
 
 Enums (short for "enumerations") are a feature in TypeScript that allow you to define a **set of named constants**.  

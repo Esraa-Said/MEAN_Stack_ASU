@@ -2,9 +2,6 @@
 # 🧠 Object-Oriented Programming in TypeScript
 
 
----
-
-
 ## 1. What is a Class?
 
 A class is a blueprint for creating objects.
