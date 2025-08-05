@@ -1,95 +1,85 @@
 const User = require("../models/user.model");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-
-
-
-
-const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find({}, { password: false, __v: false });
-    res
-      .status(200)
-      .json({ status: "success", length: users.length, data: { users } });
-  } catch (error) {
-    res.status(400).json({ status: "fail", message: error.message });
-  }
-};
+const JWT = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
 
 const signup = async (req, res) => {
   try {
-    let { password, confirmPassword, photo, name, email } = req.body;
+    let { name, password, confirmPassword, email, photo } = req.body;
+    photo = req.file?.filename || "profile.png";
+
     if (password !== confirmPassword) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Passwords do not match",
-      });
+      if (req.file) {
+        fs.unlinkSync(path.join(__dirname, "../uploads", photo));
+      }
+
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Passwords not match" });
     }
 
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
-      return res.status(400).json({
-        status: "fail",
-        message: "User already exists",
-      });
+      if (req.file) {
+        fs.unlinkSync(path.join(__dirname, "../uploads", photo));
+      }
+      return res
+        .status(400)
+        .json({ status: "fail", message: `User already exists` });
     }
 
-    console.log("File uploaded", req.file);
-    photo = req.file.filename;
-    
-    const user = await User.create({ name, email, password, photo });
+    const user = await User.create({ name, password, email, photo });
 
-    // jwt
-    const token = jwt.sign(
-      { id: user._id, name: name },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
+    const token = JWT.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN,
+    });
 
-    res
-      .status(201)
-      .json({ status: "success", token: token, data: { user: user } });
+    res.status(201).json({ status: "success", token, data: { user: user } });
   } catch (error) {
+    if (req.file) {
+      fs.unlinkSync(path.join(__dirname, "../uploads", photo));
+    }
     res
       .status(400)
-      .json({ status: "fail", message: `Error in Sign up ${error.message}` });
+      .json({ status: "fail", message: `Error in sign up ${error.message}` });
   }
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
-  //13283333
-  if (!email || !password) {
-    return res
-      .status(400)
-      .json({ status: "fail", message: "Email or Password is missing" });
-  }
+  try {
+    const { email, password } = req.body;
 
-  const existingUser = await User.findOne({ email: email });
-  if (!existingUser) {
-    return res.status(404).json({
-      status: "fail",
-      message: "User not exists",
-    });
-  }
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Email or password is missing" });
+    }
 
-  const matchedPassword = await bcrypt.compare(password, existingUser.password);
-  if (!matchedPassword) {
-    return res.status(404).json({
-      status: "fail",
-      message: "User not exists",
+    const existingUser = await User.findOne({ email: email });
+    if (!existingUser) {
+      return res
+        .status(404)
+        .json({ status: "fail", message: "User not Found" });
+    }
+
+    const matchedPassword = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
+    if (!matchedPassword) {
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Wrong password" });
+    }
+
+    const token = JWT.sign({ id: existingUser._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN,
     });
+    res.status(200).json({ status: "success", token, message: "login" });
+  } catch (error) {
+    res.status(500).json({ status: "fail", message: error.message });
   }
-  const token = jwt.sign(
-    { id: existingUser._id, name: existingUser.name },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
-  );
-  return res.status(200).json({
-    status: "success",
-    token: token,
-    data: { user: { name: existingUser.name, email } },
-  });
 };
 
 const protectRoutes = async (req, res, next) => {
@@ -98,47 +88,48 @@ const protectRoutes = async (req, res, next) => {
     if (token && token.startsWith("Bearer")) {
       token = token.split(" ")[1];
     }
+
     if (!token) {
-    return  res
-        .status(400)
-        .json({ status: "fail", message: "Your are not logged in" });
+      return res.status(401).json({ status: "fail", message: "not login" });
     }
-   const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-   console.log("decoded token", decodedToken);
-   req.userId = decodedToken.id
+
+    const decodedToken = JWT.verify(token, process.env.JWT_SECRET);
+
+    req.userId = decodedToken.id;
     next();
   } catch (error) {
-    res.status(401).json({ status: "fail", message: error.message });
+    return res.status(401).json({ status: "fail", message: error.message });
   }
 };
 
-
 const addMovieToFav = async (req, res) => {
   try {
-    // نفترض إن عندنا user ID جوه التوكن، و movieId جاي من البودي أو البرامز
-    const userId = req.userId; // هنستخرجه من middleware
+    const userId = req.userId;
+
     const { movieId } = req.body;
 
-    if (!movieId) {
-      return res.status(400).json({ status: "fail", message: "Movie ID is required" });
-    }
-
     const user = await User.findById(userId);
+
     if (!user) {
-      return res.status(404).json({ status: "fail", message: "User not found" });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "User Not Found" });
     }
 
-    // Add to favorites if not already exists
-    if (!user.favMovies.includes(movieId)) {
-      user.favMovies.push(movieId);
-      await user.save();
+    let alreadyAdded = user.favMovies?.includes(movieId);
+
+    if (alreadyAdded) {
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Movie already in your fav list" });
     }
 
-    res.status(200).json({ status: "success", data: { favMovies: user.favMovies } });
+    user.favMovies.push(movieId);
+    await user.save();
+    res.status(200).json({ status: "success", message: "movie is added" });
   } catch (error) {
     res.status(500).json({ status: "fail", message: error.message });
   }
 };
 
-
-module.exports = { signup, getAllUsers, login, protectRoutes , addMovieToFav};
+module.exports = { signup, login, protectRoutes, addMovieToFav };
