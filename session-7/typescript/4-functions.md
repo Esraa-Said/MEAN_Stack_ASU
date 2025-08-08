@@ -1,5 +1,5 @@
 
-# 🔧 Functions in TypeScript - Deep Dive
+# 🔧 Functions in TypeScript 
 
 Functions are at the heart of any JavaScript/TypeScript program.  
 In TypeScript, we add **type safety** to the parameters and return values.
