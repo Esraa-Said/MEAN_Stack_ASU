@@ -110,7 +110,7 @@ trackByUserId(index: number, user: any) {
 
 ---
 
-## ✅ 4. <ng-template> — Lazy Template Rendering
+## ✅ 4. `<ng-template>` 
 Hidden by default; used with structural directives.
 Ideal for else blocks and dynamic template rendering.
 Used in cases like `*ngIf else`, dynamic content, reusable templates, component placeholders, and default views in `*ngSwitch`.
