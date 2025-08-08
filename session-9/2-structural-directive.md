@@ -139,7 +139,7 @@ Used in cases like `*ngIf else`, dynamic content, reusable templates, component 
 </div>
 ```
 
-## ✅ 5. <ng-container> — Logical Grouping
+## ✅ 5. `<ng-container>` — Logical Grouping
 
 ### Structural Directive Conflict
 
