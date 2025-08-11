@@ -2,6 +2,8 @@ const connectDB = require("../config/db");
 const Movie = require("../models/movie.model");
 const moviesData = require("./movies.json");
 
+require("dotenv").config();
+
 const insertMovies = async () => {
   try {
     await connectDB();
