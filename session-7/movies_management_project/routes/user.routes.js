@@ -14,5 +14,4 @@ router.post(
   userControllers.protectRoutes,
   userControllers.addMovieToFav
 );
-
 module.exports = router;

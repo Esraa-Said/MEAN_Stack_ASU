@@ -1,8 +1,9 @@
+
 # Angular JWT Authentication
 
-## This document explains **step-by-step** how the authentication works.
+This document explains **step-by-step** how the authentication works.
 
-## 1️⃣ Auth Service – Logging in a user
+## ​​​ Auth Service – Logging in a user
 
 ```ts
 import { HttpClient } from "@angular/common/http";
@@ -39,17 +40,17 @@ export class Auth {
     return throwError(() => errorResponse);
   }
 }
-```
+````
 
 **What this code does as a whole:**
 
-- Sends a `POST` request to the backend with `email` and `password`.
-- If successful, extracts the `token` from the backend response using `map`.
-- If an error occurs, `catchError` handles it and sends back a friendly error object.
+* Sends a `POST` request to the backend with `email` and `password`.
+* If successful, extracts the `token` from the backend response using `map`.
+* If an error occurs, `catchError` handles it and returns a user-friendly error.
 
 ---
 
-## 2️⃣ Using Auth Service in a Login Component
+## Using Auth Service in a Login Component
 
 ```html
 <button type="button" (click)="onLogin()">Login</button>
@@ -61,21 +62,16 @@ import { Auth } from "../services/auth";
 
 @Component({
   selector: "app-login",
-  imports: [],
   templateUrl: "./login.html",
-  styleUrl: "./login.css",
+  styleUrls: ["./login.css"],
 })
 export class Login {
   private authService = inject(Auth);
 
   onLogin(email: string = "frnt@gmail.com", password: string = "12345678") {
     this.authService.login(email, password).subscribe({
-      next: (token) => {
-        console.log(token);
-      },
-      error: (error) => {
-        console.log(error);
-      },
+      next: (token) => console.log(token),
+      error: (error) => console.log(error),
     });
   }
 }
@@ -83,15 +79,13 @@ export class Login {
 
 **What this code does as a whole:**
 
-- Injects the `Auth` service.
-- Calls `login()` with default credentials when the button is clicked.
-- Prints the token to the console if login is successful, or logs the error if not.
+* Injects the `Auth` service.
+* Calls login with default credentials when clicked.
+* Logs the token if successful, or logs the error if not.
 
 ---
 
-## 3️⃣ UserModel – Storing and validating tokens
-
-- create class `UserModel` in `models` folder.
+## UserModel – Storing and validating tokens
 
 ```ts
 export class UserModel {
@@ -113,15 +107,13 @@ export class UserModel {
 
 **What this code does as a whole:**
 
-- Represents the logged-in user’s data.
-- Stores the token privately (`_token`) and only returns it if it hasn’t expired (via the `get token()` method).
-- Prevents sending expired tokens to the backend.
+* Represents logged-in user data.
+* Keeps the token private and only returns it if it's still valid.
+* Avoids sending expired tokens.
 
 ---
 
-## 4️⃣ Auth Service with BehaviorSubject and jwt-decode
-
-- npm install jwt-decode
+## Auth Service with BehaviorSubject, jwt-decode & localStorage
 
 ```ts
 import { HttpClient } from "@angular/common/http";
@@ -154,6 +146,8 @@ export class Auth {
           );
 
           this.user.next(loggedInUser);
+          localStorage.setItem("userData", JSON.stringify(loggedInUser));
+
           return response.data.user;
         } else {
           throw new Error("Token not found in response");
@@ -161,6 +155,28 @@ export class Auth {
       }),
       catchError(this.handleError)
     );
+  }
+
+  autoLogin() {
+    const userDataString = localStorage.getItem("userData");
+    if (!userDataString) return;
+
+    const userData = JSON.parse(userDataString);
+    const loadedUser = new UserModel(
+      userData.email,
+      userData.id,
+      userData._token,
+      new Date(userData._expiresIn)
+    );
+
+    if (loadedUser.token) {
+      this.user.next(loadedUser);
+    }
+  }
+
+  logout() {
+    this.user.next(null);
+    localStorage.removeItem("userData");
   }
 
   private handleError(error: any) {
@@ -183,22 +199,21 @@ export class Auth {
 
 **Key concepts explained:**
 
-- **`BehaviorSubject`**: An RxJS subject that always stores the _latest_ value and emits it to new subscribers immediately. This is perfect for storing the current logged-in user state across the app.
-- **`jwtDecode`**: Decodes the JWT token to extract user data and expiration time.
-- **`this.user.next(...)`**: Updates the `BehaviorSubject` so all components listening to it get the new user data.
+* **BehaviorSubject** → Tracks the latest authenticated user globally.
+* **jwt-decode** → Decodes the token to extract user data.
+* **localStorage** → Persists user data across page refreshes.
+* **autoLogin()** → Restores session if the token is valid.
+* **logout()** → Clears storage and authentication state.
 
 ---
 
-## 5️⃣ User Service – Adding a movie to favorites
-
-- create `user-service` in `services` folder
+## User Service – Adding a movie to favorites
 
 ```ts
 import { inject, Injectable } from "@angular/core";
 import { Auth } from "./auth";
 import { exhaustMap, map, Observable, take } from "rxjs";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { UserModel } from "../models/user";
 
 @Injectable({
   providedIn: "root",
@@ -225,25 +240,18 @@ export class UserService {
 }
 ```
 
-**Key RxJS concepts:**
-
-- **`take(1)`**: Only takes the _first_ emitted value from the observable (the current user) and then completes. Prevents memory leaks.
-- **`exhaustMap`**: Waits for the inner HTTP request to complete before processing another emission. Prevents multiple HTTP calls if the source observable emits again quickly.
-- **`HttpHeaders`**: Used to attach the `Authorization: Bearer <token>` header to secure requests.
-
 **What this code does as a whole:**
 
-- Reads the current user from `BehaviorSubject` (Auth Service).
-- Takes the token from the user and attaches it to the request header.
-- Sends the movie ID to the backend to add it to the user’s favorites.
-- Returns the updated favorites list.
+* Retrieves current user from BehaviorSubject.
+* Attaches token in Authorization header.
+* Sends movie ID to backend and returns updated favorites list.
 
 ---
 
-## 6️⃣ Calling addMovieToFav in a Component
+## Calling addMovieToFav in a Component
 
 ```ts
-private userService = inject(User);
+private userService = inject(UserService);
 
 addMovieToFav(movieId: string = '6898e282ff893e3d5b8ed89c') {
   this.userService.addMovieToFav(movieId).subscribe({
@@ -253,66 +261,33 @@ addMovieToFav(movieId: string = '6898e282ff893e3d5b8ed89c') {
 }
 ```
 
-**What this code does as a whole:**
-
-- Calls the `addMovieToFav()` method in `User Service`.
-- Logs the updated favorites list if successful, or logs the error if failed.
-
 ---
 
-## Sign up
-
-- in `auth` service.
+## Sign Up
 
 ```ts
-   signup( newUser: any) {
-    return this.http.post<any>(`${this.URL}/signup`, newUser).pipe(
-      map((response) => {
-        if (response.token) {
-          const decoded = jwtDecode<any>(response.token);
-          const expirationDate = new Date(decoded.exp * 1000);
-          const loggedInUser = new UserModel(
-            decoded.email,
-            decoded.id,
-            response.token,
-            expirationDate
-          );
-          console.log(decoded);
-          this.user.next(loggedInUser);
+signup(newUser: any) {
+  return this.http.post<any>(`${this.URL}/signup`, newUser).pipe(
+    map((response) => {
+      if (response.token) {
+        const decoded = jwtDecode<any>(response.token);
+        const expirationDate = new Date(decoded.exp * 1000);
+        const loggedInUser = new UserModel(
+          decoded.email,
+          decoded.id,
+          response.token,
+          expirationDate
+        );
+        this.user.next(loggedInUser);
+        localStorage.setItem("userData", JSON.stringify(loggedInUser));
 
-          return response.data.user;
-        } else {
-          throw new Error('Token not found in response');
-        }
-      }),
-      catchError(this.handleError)
-    );
-  }
+        return response.data.user;
+      } else {
+        throw new Error('Token not found in response');
+      }
+    }),
+    catchError(this.handleError)
+  );
+}
 ```
 
-- in `component`
-
-```ts
- onSignup(email: string = 'signup1@gmail.com', password: string= '12345678', confirmPassword: string = '12345678', name:string= 'signup1'){
-
-    this.authService.signup({email, name, password, confirmPassword}).subscribe({
-      next: (data) => {
-        console.log(data);
-      },
-      error: (error) => {
-        console.log(error);
-      },
-    });
-
-  }
-```
-
-## Summary of RxJS operators used:
-
-- **BehaviorSubject**: Stores and emits the latest value (perfect for app-wide state like current user).
-- **take(1)**: Automatically unsubscribes after taking the first emitted value.
-- **exhaustMap**: Ensures no new inner observable starts until the current one finishes (avoids duplicate requests).
-- **map**: Transforms emitted values (e.g., extracting token or favorites array).
-- **catchError**: Handles errors in the observable chain.
-
----

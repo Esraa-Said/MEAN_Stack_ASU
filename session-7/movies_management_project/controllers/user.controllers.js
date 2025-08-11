@@ -31,7 +31,7 @@ const signup = async (req, res) => {
 
     const user = await User.create({ name, password, email, photo });
 
-    const token = JWT.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = JWT.sign({ id: user._id, email }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
@@ -56,7 +56,7 @@ const login = async (req, res) => {
         .json({ status: "fail", message: "Email or password is missing" });
     }
 
-    const existingUser = await User.findOne({ email: email });
+    const existingUser = await User.findOne({ email: email }).populate('favMovies');
     if (!existingUser) {
       return res
         .status(404)
@@ -72,11 +72,23 @@ const login = async (req, res) => {
         .status(404)
         .json({ status: "fail", message: "Wrong password" });
     }
+    existingUser.password = undefined;
 
-    const token = JWT.sign({ id: existingUser._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
-    res.status(200).json({ status: "success", token, message: "login" });
+    const token = JWT.sign(
+      { id: existingUser._id, email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+      }
+    );
+    res
+      .status(200)
+      .json({
+        status: "success",
+        token,
+        data: { user: existingUser },
+        message: "login",
+      });
   } catch (error) {
     res.status(500).json({ status: "fail", message: error.message });
   }
@@ -126,7 +138,13 @@ const addMovieToFav = async (req, res) => {
 
     user.favMovies.push(movieId);
     await user.save();
-    res.status(200).json({ status: "success", message: "movie is added" });
+    res
+      .status(200)
+      .json({
+        status: "success",
+        data: { favMovies : user.favMovies},
+        message: "movie is added",
+      });
   } catch (error) {
     res.status(500).json({ status: "fail", message: error.message });
   }

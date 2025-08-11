@@ -108,7 +108,9 @@ app.use(
 ---
 
 - Movie List Component
-  - Change movie.id ===> movie_id
+  - Change `movie.id` ===> `movie_id`
+  - Change `id` to `_id? : string` in `movie-model.ts`
+  - Make Sure you have a movie with the `movie.coverImage` in `upload` folder.
   - Look How To Show Image ===> <img [src]="'http://localhost:5000/uploads/' + movie.coverImage" >
 
 ```html
