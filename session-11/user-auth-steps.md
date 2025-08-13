@@ -157,7 +157,8 @@ export class Auth {
     );
   }
 
-  autoLogin() {
+// Called from AppComponent ngOnInit to restore logged-in user from localStorage on app start
+  autoLogin() { 
     const userDataString = localStorage.getItem("userData");
     if (!userDataString) return;
 
@@ -174,6 +175,7 @@ export class Auth {
     }
   }
 
+// Called in any component
   logout() {
     this.user.next(null);
     localStorage.removeItem("userData");
