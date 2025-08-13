@@ -44,9 +44,9 @@ export class UserFormComponent {}
 
 ### 2. Create Template with `ngForm`
 
---  Remove Default Behavior `action` `method`.
--- `button`/`input` with type `submit` emit `ngSubmit` event every time submitting.
--- `template reference` is set to `ngForm` to make the form `Template Driven From` not normal `html form element`.
+-  Remove Default Behavior `action` `method`.
+- `button`/`input` with type `submit` emit `ngSubmit` event every time submitting.
+- `template reference` is set to `ngForm` to make the form `Template Driven From` not normal `html form element`.
 
 ```html
 <form #userForm="ngForm" (ngSubmit)="onSubmit()">
