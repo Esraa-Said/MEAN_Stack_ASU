@@ -6,18 +6,12 @@ const path = require("path");
 
 const signup = async (req, res) => {
   try {
-    let { name, password, confirmPassword, email, photo } = req.body;
+    let { name, password, email, photo } = req.body;
     photo = req.file?.filename || "profile.png";
 
-    if (password !== confirmPassword) {
-      if (req.file) {
-        fs.unlinkSync(path.join(__dirname, "../uploads", photo));
-      }
+   
 
-      return res
-        .status(400)
-        .json({ status: "fail", message: "Passwords not match" });
-    }
+      
 
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
