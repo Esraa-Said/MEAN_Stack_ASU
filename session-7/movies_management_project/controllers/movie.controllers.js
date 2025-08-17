@@ -1,8 +1,18 @@
 const Movie = require("../models/movie.model");
+const fs = require("fs");
+const path = require("path");
+
 
 const createMovie = async (req, res) => {
   try {
-    const movie = await Movie.create(req.body);
+
+    let movieData = {...req.body};
+
+    if(req.file){
+      movieData.coverImage = req.file.filename;
+    }
+
+    const movie = await Movie.create(movieData);
     res.status(201).json({
       status: "success",
       data: {
@@ -10,6 +20,11 @@ const createMovie = async (req, res) => {
       },
     });
   } catch (error) {
+
+    if(req.file){
+      fs.unlinkSync(path.join(__dirname, "..", "uploads", "movies", req.file.filename));
+    }
+
     res.status(400).json({ status: "fail", message: error.message });
   }
 };

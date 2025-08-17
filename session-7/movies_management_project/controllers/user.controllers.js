@@ -16,7 +16,7 @@ const signup = async (req, res) => {
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
       if (req.file) {
-        fs.unlinkSync(path.join(__dirname, "../uploads", photo));
+        fs.unlinkSync(path.join(__dirname, "../uploads/users", photo));
       }
       return res
         .status(400)
@@ -32,7 +32,7 @@ const signup = async (req, res) => {
     res.status(201).json({ status: "success", token, data: { user: user } });
   } catch (error) {
     if (req.file) {
-      fs.unlinkSync(path.join(__dirname, "../uploads", photo));
+      fs.unlinkSync(path.join(__dirname, "../uploads/users", photo));
     }
     res
       .status(400)

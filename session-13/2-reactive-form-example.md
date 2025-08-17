@@ -321,6 +321,7 @@ header .title {
 import { Component, OnInit } from '@angular/core';
 import {
 
+FormGroup,
   ReactiveFormsModule,
 
 } from '@angular/forms';
@@ -330,10 +331,10 @@ import {
 
 })
 export class ReactiveForm implements OnInit {
-  jobForm!: FormGroup;
+  movieForm!: FormGroup;
 
   ngOnInit(): void {
-    this.jobForm = new FormGroup({});
+    this.movieForm = new FormGroup({});   
   }
 }
 ```

@@ -13,7 +13,8 @@ const app = express();
 app.use(cors({ origin: "http://localhost:4200" }));
 
 require("dotenv").config();
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads/users", express.static(path.join(__dirname, "uploads/users")));
+app.use("/uploads/movies", express.static(path.join(__dirname, "uploads/movies")));
 connectDB();
 app.use(express.json());
 

@@ -1,9 +1,9 @@
 const multer = require("multer");
 const path = require("path");
 
-const diskStorage = multer.diskStorage({
+const userStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads");
+    cb(null, "uploads/users");
   },
   filename: function (req, file, cb) {
     const ext = file.mimetype.split("/")[1];
@@ -11,6 +11,19 @@ const diskStorage = multer.diskStorage({
     cb(null, filename);
   },
 });
+
+
+const movieStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/movies");
+  },
+  filename: function (req, file, cb) {
+    const ext = file.mimetype.split("/")[1];
+    const filename = `movie-${Date.now()}.${ext}`;
+    cb(null, filename);
+  },
+});
+
 
 const fileFilter = (req, file, cb) => {
   const imageType = file.mimetype.split("/")[0];
@@ -20,6 +33,7 @@ const fileFilter = (req, file, cb) => {
   cb(new Error("Only image files are allowed!"), false);
 };
 
-const upload = multer({ storage: diskStorage, fileFilter });
+const uploadUser = multer({ storage: userStorage, fileFilter });
+const uploadMovie = multer({ storage: movieStorage, fileFilter });
 
-module.exports = upload;
+module.exports = {uploadUser, uploadMovie};
