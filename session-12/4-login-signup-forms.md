@@ -209,7 +209,7 @@ export class Login {
         name="confirmPassword"
         ngModel
         required
-        minlength="6"
+        minlength="8"
         #confirmRef="ngModel"
       />
       @if (confirmRef.invalid && confirmRef.touched) {
